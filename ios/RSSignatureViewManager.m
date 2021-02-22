@@ -34,15 +34,25 @@ RCT_EXPORT_VIEW_PROPERTY(strokeColor, UIColor)
 // Both of these methods needs to be called from the main thread so the
 // UI can clear out the signature.
 RCT_EXPORT_METHOD(saveImage:(nonnull NSNumber *)reactTag) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		[self.signView saveImage];
-	});
+[self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
+RSSignatureView *view = viewRegistry[reactTag];
+if (!view || ![view isKindOfClass:[RSSignatureView class]]) {
+RCTLogError(@"Cannot find NativeView ", reactTag);
+return;
+}
+[view saveImage];
+}];
 }
 
 RCT_EXPORT_METHOD(resetImage:(nonnull NSNumber *)reactTag) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		[self.signView erase];
-	});
+[self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
+RSSignatureView *view = viewRegistry[reactTag];
+if (!view || ![view isKindOfClass:[RSSignatureView class]]) {
+RCTLogError(@"Cannot find NativeView with tag", reactTag);
+return;
+}
+[view erase];
+}];
 }
 
 -(void) publishSaveImageEvent:(NSString *) aTempPath withEncoded: (NSString *) aEncoded {
